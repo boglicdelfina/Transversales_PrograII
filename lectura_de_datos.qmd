@@ -1,0 +1,47 @@
+---
+title: "Lectura de datos - Ejercicio transversal"
+format: html
+editor: visual
+---
+
+## Ejercicio transversal - Lectura de datos
+
+### Cargamos las librerías "readr" y "dplyr"
+
+```{r}
+library(readr)
+library(dplyr)
+```
+
+### Guardamos las URL en objetos
+
+```{r}
+metadatos_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/metadatos_completos.csv"
+estacion_0472_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/NH0472.csv"
+estacion_0910_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/NH0910.csv"
+estacion_0046_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/NH0046.csv"
+estacion_0098_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/NH0098.csv"
+estacion_0437_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/NH0437.csv"
+```
+
+### Descargamos los archivos con "download.file()"
+
+```{r}
+download.file(metadatos_url, "datos/metadatos.csv")
+download.file(estacion_0472_url, "datos/estacion_0472.csv")
+download.file(estacion_0910_url, "datos/estacion_0910.csv")
+download.file(estacion_0046_url, "datos/estacion_0046.csv")
+download.file(estacion_0098_url, "datos/estacion_0098.csv")
+download.file(estacion_0437_url, "datos/estacion_0437.csv")
+```
+
+### Leemos los datos con "read_csv()"
+
+```{r}
+metadatos <- read_csv("datos/metadatos.csv")
+estacion_0472 <- read_csv("datos/estacion_0472.csv")
+estacion_0910 <- read_csv("datos/estacion_0910.csv")
+estacion_0046 <- read_csv("datos/estacion_0046.csv")
+estacion_0098 <- read_csv("datos/estacion_0098.csv")
+estacion_0437 <- read_csv("datos/estacion_0437.csv")
+```
