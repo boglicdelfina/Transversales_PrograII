@@ -27,6 +27,9 @@ estacion_0437_url <- "https://raw.githubusercontent.com/rse-r/intro-programacion
 ### Descargamos los archivos con "download.file()"
 
 ```{r}
+#para que los datos se puedan guardar correctamente
+#dir.create("datos")
+
 download.file(metadatos_url, "datos/metadatos.csv")
 download.file(estacion_0472_url, "datos/estacion_0472.csv")
 download.file(estacion_0910_url, "datos/estacion_0910.csv")
@@ -45,3 +48,41 @@ estacion_0046 <- read_csv("datos/estacion_0046.csv")
 estacion_0098 <- read_csv("datos/estacion_0098.csv")
 estacion_0437 <- read_csv("datos/estacion_0437.csv")
 ```
+
+### Vemos los tipos de datos con "glimpse()"
+
+```{r}
+glimpse(metadatos)
+glimpse(estacion_0472)
+glimpse(estacion_0910)
+glimpse(estacion_0046)
+glimpse(estacion_0098)
+glimpse(estacion_0437)
+
+```
+
+### ¿Cuántas columnas tiene cada tabla? ¿Son todas iguales?
+
+Las cinco estaciones tienen 35 columnas y son iguales entre sí. La tabla de metadatos tiene 11 columnas porque tiene otra información: los datos de las estaciones y no las mediciones.
+
+### ¿Qué tipo de dato hay en cada columna? ¿Es correcto?
+
+La columna id es texto (chr) y fecha es fecha (date). Las demás son números (dbl), pero algunas aparecen como lgl. Eso pasa porque están vacías y R no sabe qué tipo son. No está bien, porque en realidad son columnas numéricas que esa estación no midió.
+
+En metadatos, las columnas desde y hasta se leen como texto y deberían ser fechas.
+
+### ¿Cuántos registros hay en cada data frame?
+
+estacion_0472: 20425
+
+estacion_0910: 15553
+
+estacion_0046: 17041
+
+estacion_0098: 23733
+
+estacion_0437: 18929
+
+metadatos: 258
+
+Cada fila de las estaciones es un día de mediciones. Metadatos tiene 258 filas porque hay una por cada estación del INTA.
