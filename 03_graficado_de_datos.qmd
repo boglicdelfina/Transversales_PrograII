@@ -67,7 +67,12 @@ estaciones |>
   filter(id == "NH0437") |>
   ggplot(aes( x = fecha, y = temperatura_abrigo_150cm)) +
   geom_point(alpha = 0.1) +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Temperatura media diaria en la estación NH0437",
+    x = "Fecha",
+    y = "Temperatura de abrigo a 150 cm (°C)"
+  )
 ```
 
 ##### Conclusión:
@@ -87,7 +92,13 @@ estaciones |>
   summarise(
     temperatura_media = mean(temperatura_abrigo_150cm, na.rm = TRUE)) |>
   ggplot(aes(x = mes, y = temperatura_media, color = id)) + 
-  geom_line()
+  geom_line() +
+  labs(
+    title = "Temperatura media mensual en cinco estaciones del INTA",
+    x = "Mes",
+    y = "Temperatura media (°C)",
+    color = "Estación"
+  )
 ```
 
 Conclusión:
@@ -102,7 +113,12 @@ Lo que cambia es el nivel. NH0437 está siempre por encima del resto (debe ser l
 estaciones |>
   ggplot(aes(x = humedad_media_8_14_20, y = temperatura_abrigo_150cm)) +
   geom_point(alpha = 0.1) +
-  geom_smooth() 
+  geom_smooth() +
+  labs(
+    title = "Relación entre humedad y temperatura",
+    x = "Humedad media (%)",
+    y = "Temperatura de abrigo a 150 cm (°C)"
+  )
 ```
 
 Conclusión:
@@ -118,7 +134,12 @@ estaciones |>
   ggplot(aes(x = humedad_media_8_14_20, y = temperatura_abrigo_150cm)) +
   geom_point(alpha = 0.1) +
   geom_smooth() +
-  facet_wrap(~id)
+  facet_wrap(~id) +
+  labs(
+    title = "Relación entre humedad y temperatura, por estación",
+    x = "Humedad media (%)",
+    y = "Temperatura de abrigo a 150 cm (°C)"
+  )
 ```
 
 conclusión:
