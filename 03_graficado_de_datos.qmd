@@ -57,3 +57,23 @@ glimpse(estaciones)
 ```
 
 Cada tabla conserva la columna "id" con el código de la estación, así que podemos agrupar, con group_by() por esa variable sin perder de dónde viene cada fila.
+
+### Ejercicios
+
+1.  Graficá la temperatura de abrico para la estación NH0437 (tendrías que filtrar los datos para quedarte solo con esta estación). Sumá una regresión linea, ¿se mentiene constante la temperatura media con el tiempo o cambia?
+
+```{r}
+estaciones |>
+  filter(id == "NH0437") |>
+  ggplot(aes( x = fecha, y = temperatura_abrigo_150cm)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(method = "lm")
+```
+
+##### Conclusión:
+
+Primero filtramos para quedarnos únicamente con la estación NH0437 y después graficamos la temperatura en función de la fecha. El argumento "alpha = 0.1" hace los puntos casi transparentes: son casi 19.000 observaciones y de otra manera se verían como una mancha sólida.
+
+Respecto a la pregunta: ¿Se mantiene constante la temperatura media con el tiempo o cambia?
+
+No se mantiene constante. La recta de regresión sube, pero muy poco: pasa de unos 19,7 °C a principios de los 70 a poco más de 20,5 °C en 2023. O sea, menos de un grado en más de 50 años. Igual, mirando el gráfico, ese aumento casi no se nota, porque las temperaturas van de 5 a 35 °C según la época del año. La variación entre verano e invierno es mucho más grande que el cambio de todas estas décadas juntas.
