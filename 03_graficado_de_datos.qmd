@@ -95,3 +95,36 @@ Conclusión:
 Las cinco estaciones siguen el mismo patrón: temperaturas altas en enero y diciembre, y el mínimo entre junio y julio. Es el ciclo estacional del hemisferio sur.
 
 Lo que cambia es el nivel. NH0437 está siempre por encima del resto (debe ser la más al norte) y se despega sobre todo en invierno, donde llega a estar casi 4 °C arriba de NH0046. En verano las cinco se juntan bastante más.
+
+3.  ¿Cuál es la relación entre la temperatura de abrigo y la humedad? Hacé un gráfico de puntos que muestre la relación, podés sumar un suavisado (opcional). Para la humedad utilizá la varable `humedad_media_8_14_20`.
+
+```{r}
+estaciones |>
+  ggplot(aes(x = humedad_media_8_14_20, y = temperatura_abrigo_150cm)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() 
+```
+
+Conclusión:
+
+La relación es negativa, a más humedad, temperaturas un poco más bajas. El suavizado baja de 25 a 17 °C aproximadamente entre los extremos de humedad.
+
+Pero es una relación bastante débil. La nube de puntos es enorme y para una humedad de 75, por ejemplo, hay días de 5 °C y días de 30. Con la humedad sola no se puede predecir la temperatura.
+
+Se quitaron 19.862 filas por valores faltantes, casi todas de NH0910, que no tiene ningún dato de humedad.
+
+```{r}
+estaciones |> 
+  ggplot(aes(x = humedad_media_8_14_20, y = temperatura_abrigo_150cm)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth() +
+  facet_wrap(~id)
+```
+
+conclusión:
+
+Separé por estación con `facet_wrap()` para ver si todas se comportan igual o si el promedio del gráfico anterior estaba tapando diferencias entre ellas.
+
+Las cuatro que tienen datos muestran tendencia negativa, así que la relación se sostiene y no era un efecto de mezclarlas. Pero la fuerza cambia bastante: en NH0098 la caída es marcada (de 29 a 16 °C), mientras que en NH0437 y NH0472 la curva es casi plana. O sea que la humedad pesa más en unas estaciones que en otras.
+
+El panel de NH0910 queda vacío, que es justamente la estación sin registros de humedad: acá se ve directo el faltante que antes solo aparecía como un warning.
