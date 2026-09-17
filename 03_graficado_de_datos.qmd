@@ -77,3 +77,21 @@ Primero filtramos para quedarnos únicamente con la estación NH0437 y después 
 Respecto a la pregunta: ¿Se mantiene constante la temperatura media con el tiempo o cambia?
 
 No se mantiene constante. La recta de regresión sube, pero muy poco: pasa de unos 19,7 °C a principios de los 70 a poco más de 20,5 °C en 2023. O sea, menos de un grado en más de 50 años. Igual, mirando el gráfico, ese aumento casi no se nota, porque las temperaturas van de 5 a 35 °C según la época del año. La variación entre verano e invierno es mucho más grande que el cambio de todas estas décadas juntas.
+
+2.  Calculá el promedio mensual de la temperatura de abrigo para cada estación y gráfica el resultado. El gráfico tendría que tener más o menos esta pinta:
+
+```{r}
+estaciones |>
+  mutate(mes = month(fecha)) |>
+  group_by(id, mes) |>
+  summarise(
+    temperatura_media = mean(temperatura_abrigo_150cm, na.rm = TRUE)) |>
+  ggplot(aes(x = mes, y = temperatura_media, color = id)) + 
+  geom_line()
+```
+
+Conclusión:
+
+Las cinco estaciones siguen el mismo patrón: temperaturas altas en enero y diciembre, y el mínimo entre junio y julio. Es el ciclo estacional del hemisferio sur.
+
+Lo que cambia es el nivel. NH0437 está siempre por encima del resto (debe ser la más al norte) y se despega sobre todo en invierno, donde llega a estar casi 4 °C arriba de NH0046. En verano las cinco se juntan bastante más.
