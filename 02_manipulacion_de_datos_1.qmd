@@ -35,16 +35,16 @@ glimpse(estaciones)
 
 ### 1. ¿Cuántas observaciones de temperatura se hicieron en cada estación?
 
-Al revisar el dataset, se ve que posee muchos datos con NAs, por tanto, se va a usar (!is.na) al calcular
-
 ```{r}
-estaciones |> 
-  group_by(id) |> 
-  summarise(observaciones = n())
-
+estaciones |>
+  group_by(id) |>
+  summarise(
+    filas = n(),
+    observaciones = sum(!is.na(temperatura_abrigo_150cm))
+  )
 ```
 
-Se hicieron 17041 observaciones en la estacion NH0046, 23733 en la NH0098, 18929 en la NH0437, 20425 en la NH0472 y 15553 en la NH0910.
+Se hicieron 16782 mediciones de temperatura en la estación NH0046 sobre 17041 días registrados, 23540 sobre 23733 en la NH0098, 18738 sobre 18929 en la NH0437, 20359 sobre 20425 en la NH0472 y 15506 sobre 15553 en la NH0910. `n()` cuenta todos los días registrados y `sum(!is.na(...))` cuenta solo aquellos en los que efectivamente se midió la temperatura.
 
 ### 2. ¿Cuál es la temperatura mínima y la máxima registrada en cada estación?
 
@@ -57,7 +57,7 @@ estaciones |>
             temperatura_maxima = max(temperatura_abrigo_150cm_maxima, na.rm = TRUE))
 ```
 
-La mínima registrada es -15.0 °C (NH0046 y la máxima registrada es 45.4 °C (NH0098).
+La mínima registrada es -15.0 °C (NH0046) y la máxima registrada es 45.4 °C (NH0098).
 
 ### 3. ¿Cuál es el promedio y el desvío estándar de la temperatura de abrigo a 150 cm en cada estación?
 
