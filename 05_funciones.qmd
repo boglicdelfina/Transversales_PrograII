@@ -1,0 +1,204 @@
+---
+title: "05_funciones"
+format: html
+editor: visual
+---
+
+## Ejercicio transversal 5 - Funciones
+
+### Cargamos las librerias
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+```
+
+### 1. Función para descargar y leer los datos de una estación
+
+Creá una función para descargar y leer los datos de estaciones. La función deberá recibir **2 argumentos**, el id de la estación (por ejemplo "NH0437") y la ruta donde se guardará el archivo (por ejemplo "datos/NH0437.csv"). Debe poder descargar y leer los datos de cualquier estación.
+
+```{r}
+# Descarga (si hace falta) y lee los datos de una estación meteorológica del INTA.
+# id: código de la estación, por ejemplo "NH0437".
+# ruta: dónde guardar o buscar el archivo, por ejemplo "datos/NH0437.csv".
+# Devuelve un data.frame con las mediciones diarias de esa estación.
+leer_estacion <- function(id, ruta) {
+
+  if (!is.character(id)) {
+    cli::cli_abort(c(
+      "El id debe ser un texto con el código de la estación.",
+      "i" = "La variable ingresada es un {class(id)[1]}."
+    ))
+  }
+
+  if (!file.exists(ruta)) {
+    url <- paste0("https://raw.githubusercontent.com/rse-r/intro-programacion/main/datos/",
+                  id, ".csv")
+    download.file(url, ruta)
+    cli::cli_inform("Se descargó el archivo de la estación {id} en {ruta}.")
+  } else {
+    cli::cli_inform("El archivo {ruta} ya existía, se lee directamente.")
+  }
+
+  read_csv(ruta)
+}
+```
+
+Primero validamos que el `id` sea un texto, porque si alguien pasa un número la URL se arma igual pero la descarga falla con un error poco claro. Después `file.exists()` decide si hay que descargar o no: así la función se puede correr muchas veces sin bajar el mismo archivo de nuevo. Los mensajes de `cli_inform()` avisan cuál de los dos caminos tomó.
+
+Probamos la función dos veces seguidas para ver los dos casos:
+
+```{r}
+prueba <- leer_estacion("NH0437", "datos/prueba_0437.csv")
+```
+
+```{r}
+prueba <- leer_estacion("NH0437", "datos/prueba_0437.csv")
+```
+
+La primera vez descarga el archivo y la segunda avisa que ya existía.
+
+Leemos las cinco estaciones y las unimos en un solo data.frame:
+
+```{r}
+estaciones <- rbind(
+  leer_estacion("NH0472", "datos/estacion_0472.csv"),
+  leer_estacion("NH0910", "datos/estacion_0910.csv"),
+  leer_estacion("NH0046", "datos/estacion_0046.csv"),
+  leer_estacion("NH0098", "datos/estacion_0098.csv"),
+  leer_estacion("NH0437", "datos/estacion_0437.csv")
+)
+```
+
+### 2. Función `tabla_resumen_temperatura`
+
+Creá una función que se llame `tabla_resumen_temperatura` y que devuelva una tabla de resumen de la `temperatura_abrigo_150cm` para una o más estaciones.
+
+```{r}
+# Resume la temperatura de abrigo a 150 cm para una o más estaciones.
+# datos: data.frame con las mediciones, debe tener las columnas
+#   id y temperatura_abrigo_150cm.
+# Devuelve un data.frame con una fila por estación, el promedio y el desvío
+#   estándar de la temperatura.
+tabla_resumen_temperatura <- function(datos) {
+
+  if (!is.data.frame(datos)) {
+    cli::cli_abort(c(
+      "datos debe ser un data.frame.",
+      "i" = "La variable ingresada es un {class(datos)[1]}."
+    ))
+  }
+
+  if (!"temperatura_abrigo_150cm" %in% names(datos)) {
+    cli::cli_abort("La tabla no tiene la columna temperatura_abrigo_150cm.")
+  }
+
+  datos |>
+    group_by(id) |>
+    summarise(
+      promedio = mean(temperatura_abrigo_150cm, na.rm = TRUE),
+      desvio = sd(temperatura_abrigo_150cm, na.rm = TRUE)
+    )
+}
+```
+
+Además de chequear que el argumento sea un data.frame, revisamos que exista la columna que vamos a resumir. Si no está, el error avisa exactamente qué falta en vez de fallar adentro del `summarise()`.
+
+```{r}
+tabla_resumen_temperatura(estaciones)
+```
+
+Funciona igual con una sola estación:
+
+```{r}
+tabla_resumen_temperatura(prueba)
+```
+
+Si queremos la versión larga, que es la del ejercicio de tidyr, aplicamos `pivot_longer()` sobre el resultado:
+
+```{r}
+tabla_resumen_temperatura(estaciones) |>
+  pivot_longer(
+    cols = c(promedio, desvio),
+    names_to = "estadistica",
+    values_to = "valor"
+  )
+```
+
+### 3. Función `grafico_temperatura_mensual`
+
+Generá una función `grafico_temperatura_mensual` que devuelva un gráfico que muestre el promedio mensual de la temperatura de abrigo. La función debe recibir el data.frame con los datos, tener un argumento para indicarle qué colores usar y otro para el título, que por defecto debe ser "Temperatura".
+
+```{r}
+# Grafica el promedio mensual de la temperatura de abrigo a 150 cm.
+# datos: data.frame con las mediciones de una o más estaciones.
+# colores: vector con un color por estación. Si no se indica, se eligen al azar.
+# titulo: título del gráfico, por defecto "Temperatura".
+# Devuelve un gráfico de ggplot2 con una línea por estación.
+grafico_temperatura_mensual <- function(datos, colores = NULL, titulo = "Temperatura") {
+
+  if (!is.data.frame(datos)) {
+    cli::cli_abort(c(
+      "datos debe ser un data.frame.",
+      "i" = "La variable ingresada es un {class(datos)[1]}."
+    ))
+  }
+
+  cantidad_estaciones <- length(unique(datos$id))
+
+  if (is.null(colores)) {
+    colores <- sample(colors(), cantidad_estaciones)
+    cli::cli_inform("No se indicaron colores, se eligieron {cantidad_estaciones} al azar.")
+  }
+
+  if (length(colores) < cantidad_estaciones) {
+    cli::cli_abort(c(
+      "Faltan colores para graficar todas las estaciones.",
+      "i" = "Hay {cantidad_estaciones} estaciones y se indicaron {length(colores)} colores."
+    ))
+  }
+
+  datos |>
+    mutate(mes = month(fecha)) |>
+    group_by(id, mes) |>
+    summarise(
+      temperatura_promedio = mean(temperatura_abrigo_150cm, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    ggplot(aes(mes, temperatura_promedio)) +
+    geom_line(aes(color = id)) +
+    scale_color_manual(values = colores) +
+    scale_x_continuous(breaks = 1:12) +
+    labs(
+      title = titulo,
+      x = "Mes",
+      y = "Temperatura media (°C)",
+      color = "Estación"
+    )
+}
+```
+
+Usamos `.groups = "drop"` en el `summarise()` para que la tabla salga desagrupada y la función no imprima el mensaje de dplyr cada vez que se la llama.
+
+El argumento `colores` tiene `NULL` como valor por defecto, que es la forma de decir "si no me pasás nada, me arreglo solo". En ese caso `sample(colors(), ...)` elige al azar tantos colores como estaciones haya, que es el desafío opcional de la consigna. Si se pasan colores pero son menos que las estaciones, la función corta con un error claro en vez de dejar que falle `scale_color_manual()`.
+
+Gráfico con colores elegidos por nosotros:
+
+```{r}
+grafico_temperatura_mensual(
+  estaciones,
+  colores = c("darkred", "steelblue", "darkgreen", "orange", "purple"),
+  titulo = "Temperatura media mensual por estación"
+)
+```
+
+Gráfico sin indicar colores ni título, para ver los valores por defecto:
+
+```{r}
+grafico_temperatura_mensual(estaciones)
+```
+
+El ciclo anual tiene la misma forma en las cinco estaciones: el máximo está en enero, con unos 28 °C, y el mínimo en julio, alrededor de 11 °C, es decir una amplitud de unos 17 °C entre el verano y el invierno. Las curvas corren casi paralelas, así que las estaciones se diferencian por el nivel general de temperatura y no por la forma del ciclo. NH0437 queda bastante por encima del resto durante todo el año, lo que coincide con que es la de mayor promedio en la tabla de resumen.
