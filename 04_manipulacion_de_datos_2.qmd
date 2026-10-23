@@ -1,0 +1,109 @@
+---
+title: "Manipulación de datos ordenados II - Ejercicio transversal"
+format: html
+editor: visual
+---
+
+## Ejercicio transversal - Manipulación de datos ordenados II
+
+### Cargamos las librerías "readr", "dplyr" y "tidyr"
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+```
+
+### Leemos los datos de las estaciones y los unimos con "rbind()"
+
+```{r}
+estacion_0472 <- read_csv("datos/estacion_0472.csv")
+estacion_0910 <- read_csv("datos/estacion_0910.csv")
+estacion_0046 <- read_csv("datos/estacion_0046.csv")
+estacion_0098 <- read_csv("datos/estacion_0098.csv")
+estacion_0437 <- read_csv("datos/estacion_0437.csv")
+
+estaciones <- rbind(estacion_0472, estacion_0910, estacion_0046,
+                    estacion_0098, estacion_0437)
+```
+
+## Resultado del ejercicio 3 dplyr
+
+Promedio y desvío estándar de la temperatura de abrigo a 150 cm en cada estación.
+
+```{r}
+temperatura_resumen <- estaciones |> 
+  group_by(id) |> 
+  summarise(temperatura_promedio = mean(temperatura_abrigo_150cm, na.rm = TRUE),
+            temperatura_desvio = sd(temperatura_abrigo_150cm, na.rm = TRUE))
+
+temperatura_resumen
+```
+
+Esta tabla tiene 5 filas (una por estación) y 3 columnas: `id`, `temperatura_promedio` y `temperatura_desvio`.
+
+### 1. Alargamos el resultado con "pivot_longer()"
+
+```{r}
+temperatura_larga <- pivot_longer(temperatura_resumen,
+                                  cols = starts_with("temperatura"),
+                                  names_to = "estadistico",
+                                  values_to = "valor")
+
+temperatura_larga
+```
+
+La tabla pasó de 5 filas y 3 columnas a 10 filas y 3 columnas (`id`, `estadistico` y `valor`).
+
+### 2. Ensanchamos el resultado anterior con "pivot_wider()"
+
+Usando `temperatura_larga`, los nombres de las estaciones (`id`) pasan a ser columnas y las filas son los estadísticos.
+
+```{r}
+temperatura_ancha <- pivot_wider(temperatura_larga,
+                                 names_from = id,
+                                 values_from = valor)
+
+temperatura_ancha
+```
+
+La tabla tiene 2 filas (promedio y desvío) y 6 columnas (`estadistico` y una columna por estación)
+
+## Uniones
+
+### 1. Metadatos
+
+Ya fueron descargados en el ejercicio de lectura de datos.
+
+```{r}
+metadatos <- read_csv("datos/metadatos.csv")
+
+glimpse(metadatos)
+```
+
+La tabla tiene 258 filas (una por estación del INTA) y 11 columnas: `id`, `nombre`, `tipo`, `localidad`, `provincia`, `lat`, `lon`, `altura`, `ubicacion`, `desde` y `hasta`.
+
+### 2. Variables clave
+
+La variable que tienen en común las dos tablas es `id`, el código de la estación (por ejemplo "NH0472"). Es la única columna que se llama igual en ambas.
+
+Antes de unir, revisamos que la clave sea confiable en la tabla de metadatos, es decir que cada estación aparezca una sola vez. Si un `id` estuviera repetido, el join duplicaría filas de los datos meteorológicos.
+
+```{r}
+metadatos |> 
+  filter(id %in% estaciones$id)
+```
+
+Salen 5 filas, una por cada estación con la que trabajamos, y ninguna repetida. Así que cada fila de `estaciones` va a encontrar exactamente una coincidencia en `metadatos`.
+
+### 3. Unimos las tablas
+
+```{r}
+estaciones_metadatos <- left_join(estaciones, metadatos, by = "id")
+
+estaciones_metadatos
+```
+
+El resultado tiene las mismas 95681 filas que `estaciones` (las columnas de `metadatos` se agregan a la derecha) y 45 columnas: las 35 de las mediciones más las 10 de los metadatos que no son `id`.
+
+Se eligio left_join() ya que nos interesan las mediciones de las 5 estaciones, y la tabla `metadatos` solo aporta información extra. `left_join()` conserva todas las filas de `estaciones` y les agrega las columnas de `metadatos`.
